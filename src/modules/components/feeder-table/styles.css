@@ -1,0 +1,35 @@
+.loading-button,
+.action-button {
+  min-width: unset !important;
+}
+
+.loading-button__loading > svg {
+  fill: transparent;
+}
+
+.add-feeder-wrapper {
+  margin-bottom: 16px;
+}
+
+.add-feeder-wrapper.hide {
+  height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+}
+
+.add-feeder-note {
+  font-size: 0.875rem;
+  opacity: 0.6;
+  margin: 8px 0;
+}
+
+.add-feeder-btn {
+  padding: 15px !important;
+}
+
+.add-feeder-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.add-feeder-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline span,
+#add-feeder-input-label.Mui-focused {
+  color: #1976d2 !important;
+  border-color: #1976d2 !important;
+}

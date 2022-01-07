@@ -1,0 +1,7 @@
+.MuiButton-root {
+  text-transform: none !important;
+}
+
+.MuiDialog-paper {
+  background-color: var(--color-white) !important;
+}
