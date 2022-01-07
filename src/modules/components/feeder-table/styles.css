@@ -27,8 +27,13 @@
   padding: 15px !important;
 }
 
-.add-feeder-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
-.add-feeder-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline span,
+.add-feeder-input
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline,
+.add-feeder-input
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline
+  span,
 #add-feeder-input-label.Mui-focused {
   color: #1976d2 !important;
   border-color: #1976d2 !important;

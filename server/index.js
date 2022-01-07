@@ -1,5 +1,5 @@
-import express from 'express';
-import path from 'path';
+import express from "express";
+import path from "path";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3001;
 const rows = [
   {
     id: 1,
-    feederName: 'jerry',
+    feederName: "jerry",
     hoursPlayedOneWeek: 2,
     gamesPlayedOneWeek: 4,
     totalDeathsOneWeek: 0,
@@ -16,7 +16,7 @@ const rows = [
   },
   {
     id: 2,
-    feederName: 'jerrry',
+    feederName: "jerrry",
     hoursPlayedOneWeek: 2,
     gamesPlayedOneWeek: 4,
     totalDeathsOneWeek: 0,
@@ -25,7 +25,7 @@ const rows = [
   },
   {
     id: 3,
-    feederName: 'jerrrry',
+    feederName: "jerrrry",
     hoursPlayedOneWeek: 2,
     gamesPlayedOneWeek: 4,
     totalDeathsOneWeek: 0,
@@ -34,7 +34,7 @@ const rows = [
   },
   {
     id: 4,
-    feederName: 'jerrrrry',
+    feederName: "jerrrrry",
     hoursPlayedOneWeek: 2,
     gamesPlayedOneWeek: 4,
     totalDeathsOneWeek: 0,
@@ -44,24 +44,24 @@ const rows = [
 ];
 
 // Have Node serve the files for our built React app
-app.use(express.static(path.resolve('../build')));
+app.use(express.static(path.resolve("../build")));
 
 // Endpoints
-app.get('/api/feeders', (_req, res) => {
+app.get("/api/feeders", (_req, res) => {
   res.json(rows);
 });
 
-app.post('/api/feeder', (_req, res) => {
-  res.status(400).send({ message: 'bad' });
+app.post("/api/feeder", (_req, res) => {
+  res.status(400).send({ message: "bad" });
 });
 
-app.delete('/api/feeders', (_req, res) => {
-  res.status(400).send({ message: 'bad' });
+app.delete("/api/feeders", (_req, res) => {
+  res.status(400).send({ message: "bad" });
 });
 
 // All other GET requests not handled before will return our React app
-app.get('*', (_req, res) => {
-  res.sendFile(path.resolve(__dirname, '../build', 'index.html'));
+app.get("*", (_req, res) => {
+  res.sendFile(path.resolve(__dirname, "../build", "index.html"));
 });
 
 app.listen(PORT, () => {

@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
-import Container from '@mui/material/Container';
+import Container from "@mui/material/Container";
 
-import Header from './components/header';
-import FeederTable from './components/feeder-table';
+import Header from "./components/header";
+import FeederTable from "./components/feeder-table";
 
-import './App.css';
+import "./App.css";
 
 function App() {
   return (
