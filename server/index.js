@@ -14,7 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
-const MAX_FEEDERS_LENGTH = 5;
+const MAX_NUMBER_OF_FEEDERS = 10;
 
 app.use(
   cors({ origin: "https://feeder.onrender.com", optionsSuccessStatus: 200 })
@@ -273,7 +273,7 @@ app.get("/api/feeders", async (req, res) => {
 app.post("/api/feeder", async (req, res) => {
   const feedersCount = await Feeder.count({});
 
-  if (feedersCount >= MAX_FEEDERS_LENGTH) {
+  if (feedersCount >= MAX_NUMBER_OF_FEEDERS) {
     res.status(400).send({
       message: "Too many feeders - remove someone before adding a new one",
     });
