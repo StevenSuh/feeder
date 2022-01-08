@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 import { Feeder } from "./db.js";
 
-import 'express-async-errors';
+import "express-async-errors";
 
 dotenv.config();
 
@@ -14,26 +14,28 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
-const MAX_FEEDERS_LENGTH = 10;
+const MAX_FEEDERS_LENGTH = 5;
 
 app.use(
   cors({ origin: "https://feeder.onrender.com", optionsSuccessStatus: 200 })
 );
 app.use(express.json());
 
-const fetchRiotWithDelay = (url, delay = 1000) =>
+const promiseWithTimeout = (promiseFn, delay = 1000) =>
   new Promise((resolve, reject) =>
-    setTimeout(
-      () =>
-        fetch(url, { headers: { "X-Riot-Token": RIOT_API_KEY } })
-          .then(async (res) => {
-            const data = await res.json();
-            return { ok: res.ok, data };
-          })
-          .then(resolve)
-          .catch(reject),
-      delay
-    )
+    setTimeout(() => promiseFn().then(resolve).catch(reject), delay)
+  );
+
+const fetchRiotWithDelay = (url, delay = 1000) =>
+  promiseWithTimeout(
+    () =>
+      fetch(url, { headers: { "X-Riot-Token": RIOT_API_KEY } }).then(
+        async (res) => {
+          const data = await res.json();
+          return { ok: res.ok, data };
+        }
+      ),
+    delay
   );
 
 const getAllMatchesWithinOneWeek = async (feeder) => {
@@ -190,18 +192,28 @@ app.get("/api/feeders", async (req, res) => {
     }))
     .filter(
       ({ puuid, lastFetched = 0 }) =>
-        Date.now() - lastFetched > 1000 * 60 * 60 ||
+        Date.now() - lastFetched > 1000 * 60 * 60 * 24 ||
         feedersToForceFetch.includes(puuid)
     );
 
-  const riotProfilesPromise = Promise.all(allFeeders.map(getRiotProfile));
+  const riotProfilesPromise = Promise.all(
+    allFeeders.map((feeder, i) =>
+      promiseWithTimeout(() => getRiotProfile(feeder), 1000 + (i + 1) * 1000)
+    )
+  );
 
-  const matchesByPuuidPromises = Promise.all(feedersToFetch.map((feeder) =>
-    getAllMatchesWithinOneWeek(feeder)
-  ).map(
-    (matchesByPuuidPromise) =>
-      matchesByPuuidPromise.then(getMatchDetails)
-  ));
+  const matchesByPuuidPromises = Promise.all(
+    feedersToFetch
+      .map((feeder, i) =>
+        promiseWithTimeout(
+          () => getAllMatchesWithinOneWeek(feeder),
+          1000 + (i + 1) * 1000
+        )
+      )
+      .map((matchesByPuuidPromise) =>
+        matchesByPuuidPromise.then(getMatchDetails)
+      )
+  );
 
   const [matchesWithDetailByPuuid, riotProfiles] = await Promise.all([
     matchesByPuuidPromises,

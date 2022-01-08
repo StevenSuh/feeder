@@ -83,6 +83,6 @@ const columns: GridColDef[] = [
   },
 ];
 
-export const MAX_NUMBER_OF_FEEDERS = 10;
+export const MAX_NUMBER_OF_FEEDERS = 5;
 
 export default columns;

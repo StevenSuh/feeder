@@ -241,7 +241,7 @@ function FeederTable() {
             </LoadingButton>
           </Stack>
           <p className="add-feeder-note">
-            Note: this board can only track 10 feeders at a time
+            Note: this board can only track {MAX_NUMBER_OF_FEEDERS} feeders at a time
           </p>
           <p className="add-feeder-note">
             Note 2: By default, the refresh button only refreshes if the feeder
@@ -254,8 +254,8 @@ function FeederTable() {
             classes={{ overlay: "feeder-board-overlay" }}
             rows={feederRows}
             columns={columns}
-            pageSize={20}
-            rowsPerPageOptions={[20]}
+            pageSize={MAX_NUMBER_OF_FEEDERS}
+            rowsPerPageOptions={[MAX_NUMBER_OF_FEEDERS]}
             loading={isLoading}
             selectionModel={selectedIds}
             onSelectionModelChange={setSelectedIds}
