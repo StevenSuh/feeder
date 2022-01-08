@@ -14,7 +14,7 @@ const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
 const MAX_FEEDERS_LENGTH = 10;
 
-app.use(cors());
+app.use(cors({ origin: 'https://feeder.onrender.com', optionsSuccessStatus: 200 }));
 app.use(express.json());
 
 // Have Node serve the files for our built React app
