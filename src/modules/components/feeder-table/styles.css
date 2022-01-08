@@ -38,3 +38,7 @@
   color: #1976d2 !important;
   border-color: #1976d2 !important;
 }
+
+.feeder-board-overlay {
+  background-color: var(--color-white-2) !important;
+}

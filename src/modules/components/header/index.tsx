@@ -27,10 +27,14 @@ function Header() {
 
     const computedStyle = getComputedStyle(document.documentElement);
     const darkColor = computedStyle.getPropertyValue("--color-dark");
+    const darkColor2 = computedStyle.getPropertyValue("--color-dark-2");
     const whiteColor = computedStyle.getPropertyValue("--color-white");
+    const whiteColor2 = computedStyle.getPropertyValue("--color-white-2");
 
     document.documentElement.style.setProperty("--color-dark", whiteColor);
     document.documentElement.style.setProperty("--color-white", darkColor);
+    document.documentElement.style.setProperty("--color-dark-2", whiteColor2);
+    document.documentElement.style.setProperty("--color-white-2", darkColor2);
 
     if (isDarkMode) {
       localStorage.setItem("darkMode", "true");

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -27,7 +27,7 @@ const validateNewFeederName = (
   if (!name) {
     return "Feeder name cannot be empty";
   }
-  if (rows.find(({ feederName }) => feederName === name)) {
+  if (rows.find(({ feederName }) => feederName.toLowerCase() === name.toLowerCase())) {
     return "Feeder name already exists";
   }
   if (rows.length >= MAX_NUMBER_OF_FEEDERS) {
@@ -37,6 +37,8 @@ const validateNewFeederName = (
 };
 
 function FeederTable() {
+  const skipInitialRender = useRef(false);
+
   const [feederRows, setFeederRows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -47,12 +49,11 @@ function FeederTable() {
 
   const [errorMsg, setErrorMsg] = useState("");
 
-  console.log(selectedIds);
-
   const onRefresh = useCallback(async () => {
     setErrorMsg("");
     setIsLoading(true);
     const data = await fetchFeeders();
+    setErrorMsg("");
     setFeederRows(data);
     setIsLoading(false);
   }, []);
@@ -68,6 +69,11 @@ function FeederTable() {
 
   const onRemoveSelectedIds = useCallback(
     async (selectedIds: GridSelectionModel) => {
+      if (isLoading) {
+        setErrorMsg('Wait for table to load data first');
+        return;
+      }
+
       if (!selectedIds.length) {
         setErrorMsg("Select a feeder to remove");
         return;
@@ -94,11 +100,16 @@ function FeederTable() {
       setSelectedIds([]);
       onRefresh();
     },
-    [onRefresh]
+    [isLoading, onRefresh]
   );
 
   const onAddFeeder = useCallback(
     async (newFeederName: string) => {
+      if (isLoading) {
+        setErrorMsg('Wait for table to load data first');
+        return;
+      }
+
       const validationMsg = validateNewFeederName(newFeederName, feederRows);
       if (validationMsg) {
         setErrorMsg(validationMsg);
@@ -111,7 +122,7 @@ function FeederTable() {
         headers: { "Content-Type": "application/json" },
       })
         .then((res) => res.json())
-        .catch(() => false);
+        .catch((err) => false);
 
       if (!data) {
         setErrorMsg("Failed to add - try again later");
@@ -126,10 +137,24 @@ function FeederTable() {
       setNewFeederName("");
       onRefresh();
     },
-    [feederRows, onRefresh]
+    [isLoading, feederRows, onRefresh]
   );
 
-  useEffect(() => void onRefresh(), [onRefresh]);
+  const onPressEnter = useCallback(
+    (event) => {
+      if (event.key === "Enter") {
+        onAddFeeder(newFeederName);
+      }
+    },
+    [onAddFeeder, newFeederName]
+  );
+
+  useEffect(() => {
+    if (!skipInitialRender.current) {
+      skipInitialRender.current = true;
+      onRefresh();
+    }
+  }, [onRefresh]);
 
   return (
     <>
@@ -144,7 +169,7 @@ function FeederTable() {
           alignItems="center"
           justifyContent="space-between"
         >
-          <h4>Last 7 days</h4>
+          <h3>Last 7 days</h3>
           <Stack direction="row" alignItems="center">
             <Button
               classes={{ root: "action-button" }}
@@ -174,6 +199,7 @@ function FeederTable() {
               label="Feeder name"
               variant="outlined"
               onChange={(event) => setNewFeederName(event.target.value)}
+              onKeyDown={onPressEnter}
               value={newFeederName}
             />
             <Button
@@ -186,12 +212,12 @@ function FeederTable() {
             </Button>
           </Stack>
           <p className="add-feeder-note">
-            Note: newly added feeders will need some time before the table
-            starts showing accurate data
+            Note: this board cannot track more than 10 feeders at a time 
           </p>
         </Stack>
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
+            classes={{ overlay: 'feeder-board-overlay' }}
             rows={feederRows}
             columns={columns}
             pageSize={20}
@@ -210,7 +236,7 @@ function FeederTable() {
       >
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to remove these feeders?
+            Are you sure you want to remove {selectedIds.length > 1 ? 'these feeders' : 'this feeder'}?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
