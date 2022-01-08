@@ -14,8 +14,11 @@ mongoose.connect(ATLAS_URI, {
 // Schema
 const FeederSchema = new mongoose.Schema(
   {
+    // Riot stuff
     puuid: String,
     name: String,
+
+    // League of legends
     hoursPlayedOneWeek: Number,
     gamesPlayedOneWeek: Number,
     avgImpactScoreOneWeek: Number,
@@ -28,7 +31,24 @@ const FeederSchema = new mongoose.Schema(
   }
 );
 
+const TfterSchema = new mongoose.Schema(
+  {
+    // Riot stuff
+    puuid: String,
+    name: String,
+
+    // TFT
+    hoursPlayedOneWeek: Number,
+    gamesPlayedOneWeek: Number,
+    lastFetched: Number, // timestamp
+  },
+  {
+    timestamps: true,
+  }
+);
+
 export const Feeder = mongoose.model("Feeder", FeederSchema);
+export const Tfter = mongoose.model("Tfter", TfterSchema);
 
 const db = mongoose.connection;
 

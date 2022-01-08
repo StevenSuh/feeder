@@ -5,7 +5,12 @@ import LoadingButton from "@mui/lab/LoadingButton";
 
 import RefreshIcon from "@mui/icons-material/Refresh";
 
-import { updateErrorMsg, selectIsLoading, updateIsLoading, replaceFeederRows } from "../../../reducer";
+import {
+  updateErrorMsg,
+  selectIsLoading,
+  updateIsLoading,
+  replaceFeederRows,
+} from "../../../reducer";
 
 import "./styles.css";
 

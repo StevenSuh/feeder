@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import classNames from "classnames";
 
-import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -20,7 +19,6 @@ import {
   updateIsLoading,
   updateErrorMsg,
   replaceFeederRows,
-  selectErrorMsg,
   selectFeederRows,
   selectIsLoading,
 } from "../../../reducer";
@@ -28,8 +26,8 @@ import {
 import columns, { MAX_NUMBER_OF_FEEDERS } from "./definition";
 import "./styles.css";
 
-const fetchFeeders = () =>
-  fetch("/api/feeders").then(async (res) => {
+const fetchFeeders = (id?: string) =>
+  fetch(`/api/feeders${id ? '?ids=' + id : ''}`).then(async (res) => {
     const data = await res.json();
     return { ok: res.ok, data };
   });
@@ -56,11 +54,10 @@ const validateNewFeederName = (
 
 function FeederTable() {
   const skipInitialRender = useRef(false);
+  const dispatch = useDispatch();
 
   const feederRows = useSelector(selectFeederRows);
   const isLoading = useSelector(selectIsLoading);
-  const errorMsg = useSelector(selectErrorMsg);
-  const dispatch = useDispatch();
 
   const [selectedIds, setSelectedIds] = useState<GridSelectionModel>([]);
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
@@ -68,10 +65,10 @@ function FeederTable() {
   const [newFeederName, setNewFeederName] = useState("");
   const [isAddNameLoading, setIsAddNameLoading] = useState(false);
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = useCallback(async (id?: string) => {
     dispatch(updateErrorMsg(""));
     dispatch(updateIsLoading(true));
-    const result = await fetchFeeders();
+    const result = await fetchFeeders(id);
     dispatch(updateIsLoading(false));
 
     if (!result.ok) {
@@ -156,7 +153,7 @@ function FeederTable() {
         headers: { "Content-Type": "application/json" },
       })
         .then((res) => res.json())
-        .catch((err) => false);
+        .catch(() => false);
 
       if (!data) {
         dispatch(updateErrorMsg("Failed to add - try again later"));
@@ -170,7 +167,7 @@ function FeederTable() {
 
       setIsAddNameLoading(false);
       setNewFeederName("");
-      onRefresh();
+      onRefresh(data.id);
     },
     [dispatch, isAddNameLoading, isLoading, feederRows, onRefresh]
   );
@@ -194,11 +191,6 @@ function FeederTable() {
   return (
     <>
       <Stack direction="column">
-        {errorMsg && (
-          <Alert variant="filled" severity="error">
-            {errorMsg}
-          </Alert>
-        )}
         <Stack
           direction="row"
           alignItems="center"

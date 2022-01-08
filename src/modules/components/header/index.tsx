@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 
+import Alert from "@mui/material/Alert";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
@@ -7,10 +9,14 @@ import Switch from "@mui/material/Switch";
 import DarkMode from "@mui/icons-material/DarkMode";
 import LightMode from "@mui/icons-material/LightMode";
 
+import { selectErrorMsg } from "../../../reducer";
+
 import "./styles.css";
 
 function Header() {
   const skipInitialRender = useRef(false);
+
+  const errorMsg = useSelector(selectErrorMsg);
 
   const [isDarkMode, setIsDarkMode] = useState(
     Boolean(localStorage.getItem("darkMode"))
@@ -44,23 +50,30 @@ function Header() {
   }, [isDarkMode]);
 
   return (
-    <Stack direction="row" alignItems="center" justifyContent="space-between">
-      <h1>Feeders</h1>
-      <FormControlLabel
-        classes={{
-          root: "dark-mode-label-wrapper",
-          label: "dark-mode-label",
-        }}
-        control={
-          <Switch
-            disableRipple
-            inputProps={{ "aria-label": "Dark mode" }}
-            checked={isDarkMode}
-            onChange={(event) => setIsDarkMode(event.target.checked)}
-          />
-        }
-        label={isDarkMode ? <DarkMode /> : <LightMode />}
-      />
+    <Stack direction="column">
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <h1>Feeders</h1>
+        <FormControlLabel
+          classes={{
+            root: "dark-mode-label-wrapper",
+            label: "dark-mode-label",
+          }}
+          control={
+            <Switch
+              disableRipple
+              inputProps={{ "aria-label": "Dark mode" }}
+              checked={isDarkMode}
+              onChange={(event) => setIsDarkMode(event.target.checked)}
+            />
+          }
+          label={isDarkMode ? <DarkMode /> : <LightMode />}
+        />
+      </Stack>
+      {errorMsg && (
+        <Alert variant="filled" severity="error">
+          {errorMsg}
+        </Alert>
+      )}
     </Stack>
   );
 }
