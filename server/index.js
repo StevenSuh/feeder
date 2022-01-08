@@ -1,9 +1,12 @@
-import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import fetch from "node-fetch";
 
+import cors from "cors";
+import dotenv from "dotenv";
+
 import { Feeder } from "./db.js";
+
+import 'express-async-errors';
 
 dotenv.config();
 
@@ -174,7 +177,7 @@ const getRiotProfile = (name) =>
   );
 
 // Endpoints
-app.get("/api/feeders", async (req, res, next) => {
+app.get("/api/feeders", async (req, res) => {
   const allFeeders = await Feeder.find({});
   const feedersToForceFetch = req.query.ids ? req.query.ids.split(",") : [];
 
@@ -193,20 +196,15 @@ app.get("/api/feeders", async (req, res, next) => {
 
   const riotProfilesPromise = Promise.all(allFeeders.map(getRiotProfile));
 
-  const matchesByPuuidPromises = feedersToFetch.map((feeder) =>
-    getAllMatchesWithinOneWeek(feeder).catch(next)
-  );
-  const matchesWithDetailByPuuidPromises = matchesByPuuidPromises.map(
+  const matchesByPuuidPromises = Promise.all(feedersToFetch.map((feeder) =>
+    getAllMatchesWithinOneWeek(feeder)
+  ).map(
     (matchesByPuuidPromise) =>
-      matchesByPuuidPromise.then(getMatchDetails).catch(next)
-  );
-
-  const matchesWithDetailByPuuidPromise = Promise.all(
-    matchesWithDetailByPuuidPromises
-  );
+      matchesByPuuidPromise.then(getMatchDetails)
+  ));
 
   const [matchesWithDetailByPuuid, riotProfiles] = await Promise.all([
-    matchesWithDetailByPuuidPromise,
+    matchesByPuuidPromises,
     riotProfilesPromise,
   ]);
   const parsedFeederDetails = matchesWithDetailByPuuid.map(parseMatchDetails);
@@ -260,7 +258,7 @@ app.get("/api/feeders", async (req, res, next) => {
 });
 
 // Add more feeders to the list
-app.post("/api/feeder", async (req, res, next) => {
+app.post("/api/feeder", async (req, res) => {
   const feedersCount = await Feeder.count({});
 
   if (feedersCount >= MAX_FEEDERS_LENGTH) {
@@ -281,7 +279,7 @@ app.post("/api/feeder", async (req, res, next) => {
     return;
   }
 
-  const result = await getRiotProfile(req.body.name).catch(next);
+  const result = await getRiotProfile(req.body.name);
 
   if (!result.ok) {
     throw new Error(
@@ -311,6 +309,13 @@ app.post("/api/feeder", async (req, res, next) => {
 app.delete("/api/feeders", async (req, res) => {
   await Feeder.deleteMany({ puuid: { $in: req.body.ids } });
   res.json({});
+});
+
+app.use((err, req, res, next) => {
+  if (err.message) {
+    res.status(400).send({ message: err.message });
+  }
+  next(err);
 });
 
 app.listen(PORT);

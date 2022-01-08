@@ -24,7 +24,10 @@ const fetchFeeders = (selectedIds?: GridSelectionModel) =>
     `/api/feeders?${
       selectedIds && selectedIds.length ? "ids=" + selectedIds.join(",") : ""
     }`
-  ).then((res) => res.json());
+  ).then(async (res) => {
+    const data = await res.json();
+    return { ok: res.ok, data };
+  });
 
 const validateNewFeederName = (
   name: string,
@@ -63,10 +66,16 @@ function FeederTable() {
   const onRefresh = useCallback(async (selectedIds?: GridSelectionModel) => {
     setErrorMsg("");
     setIsLoading(true);
-    const data = await fetchFeeders(selectedIds);
-    setErrorMsg("");
-    setFeederRows(data);
+    const result = await fetchFeeders(selectedIds);
     setIsLoading(false);
+
+    if (!result.ok) {
+      setErrorMsg(result.data.message);
+      return;
+    }
+
+    setErrorMsg("");
+    setFeederRows(result.data);
   }, []);
 
   const onClickRemoveButton = useCallback((selectedIds: GridSelectionModel) => {
