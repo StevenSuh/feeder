@@ -5,3 +5,7 @@
 .MuiDialog-paper {
   background-color: var(--color-white) !important;
 }
+
+.MuiLoadingButton-loading {
+  color: transparent !important;
+}

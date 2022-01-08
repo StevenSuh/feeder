@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import classNames from "classnames";
 
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -18,7 +19,12 @@ import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import columns, { MAX_NUMBER_OF_FEEDERS } from "./definition";
 import "./styles.css";
 
-const fetchFeeders = () => fetch("/api/feeders").then((res) => res.json());
+const fetchFeeders = (selectedIds?: GridSelectionModel) =>
+  fetch(
+    `/api/feeders?${
+      selectedIds && selectedIds.length ? "ids=" + selectedIds.join(",") : ""
+    }`
+  ).then((res) => res.json());
 
 const validateNewFeederName = (
   name: string,
@@ -27,7 +33,11 @@ const validateNewFeederName = (
   if (!name) {
     return "Feeder name cannot be empty";
   }
-  if (rows.find(({ feederName }) => feederName.toLowerCase() === name.toLowerCase())) {
+  if (
+    rows.find(
+      ({ feederName }) => feederName.toLowerCase() === name.toLowerCase()
+    )
+  ) {
     return "Feeder name already exists";
   }
   if (rows.length >= MAX_NUMBER_OF_FEEDERS) {
@@ -46,13 +56,14 @@ function FeederTable() {
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
 
   const [newFeederName, setNewFeederName] = useState("");
+  const [isAddNameLoading, setIsAddNameLoading] = useState(false);
 
   const [errorMsg, setErrorMsg] = useState("");
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = useCallback(async (selectedIds?: GridSelectionModel) => {
     setErrorMsg("");
     setIsLoading(true);
-    const data = await fetchFeeders();
+    const data = await fetchFeeders(selectedIds);
     setErrorMsg("");
     setFeederRows(data);
     setIsLoading(false);
@@ -70,7 +81,7 @@ function FeederTable() {
   const onRemoveSelectedIds = useCallback(
     async (selectedIds: GridSelectionModel) => {
       if (isLoading) {
-        setErrorMsg('Wait for table to load data first');
+        setErrorMsg("Wait for table to load data first");
         return;
       }
 
@@ -106,7 +117,11 @@ function FeederTable() {
   const onAddFeeder = useCallback(
     async (newFeederName: string) => {
       if (isLoading) {
-        setErrorMsg('Wait for table to load data first');
+        setErrorMsg("Wait for table to load data first");
+        return;
+      }
+
+      if (isAddNameLoading) {
         return;
       }
 
@@ -115,6 +130,8 @@ function FeederTable() {
         setErrorMsg(validationMsg);
         return;
       }
+
+      setIsAddNameLoading(true);
 
       const data = await fetch("/api/feeder", {
         method: "POST",
@@ -134,10 +151,11 @@ function FeederTable() {
         return;
       }
 
+      setIsAddNameLoading(false);
       setNewFeederName("");
       onRefresh();
     },
-    [isLoading, feederRows, onRefresh]
+    [isAddNameLoading, isLoading, feederRows, onRefresh]
   );
 
   const onPressEnter = useCallback(
@@ -173,6 +191,7 @@ function FeederTable() {
           <Stack direction="row" alignItems="center">
             <Button
               classes={{ root: "action-button" }}
+              className={classNames({ hide: !selectedIds.length })}
               variant="text"
               onClick={() => onClickRemoveButton(selectedIds)}
             >
@@ -185,7 +204,7 @@ function FeederTable() {
               }}
               loading={isLoading}
               variant="text"
-              onClick={onRefresh}
+              onClick={() => onRefresh(selectedIds)}
             >
               <RefreshIcon />
             </LoadingButton>
@@ -202,22 +221,28 @@ function FeederTable() {
               onKeyDown={onPressEnter}
               value={newFeederName}
             />
-            <Button
+            <LoadingButton
               classes={{ root: "add-feeder-btn" }}
               variant="outlined"
               onClick={() => onAddFeeder(newFeederName)}
+              loading={isAddNameLoading}
               disableElevation
             >
               Add to list
-            </Button>
+            </LoadingButton>
           </Stack>
           <p className="add-feeder-note">
-            Note: this board cannot track more than 10 feeders at a time 
+            Note: this board can only track 10 feeders at a time
+          </p>
+          <p className="add-feeder-note">
+            Note 2: By default, the refresh button only refreshes if the feeder was updated
+            at least an hour ago. Manually select some feeders and refresh them
+            individually if you want fresh data
           </p>
         </Stack>
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
-            classes={{ overlay: 'feeder-board-overlay' }}
+            classes={{ overlay: "feeder-board-overlay" }}
             rows={feederRows}
             columns={columns}
             pageSize={20}
@@ -236,7 +261,8 @@ function FeederTable() {
       >
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to remove {selectedIds.length > 1 ? 'these feeders' : 'this feeder'}?
+            Are you sure you want to remove{" "}
+            {selectedIds.length > 1 ? "these feeders" : "this feeder"}?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

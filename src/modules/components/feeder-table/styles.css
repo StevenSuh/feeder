@@ -3,6 +3,10 @@
   min-width: unset !important;
 }
 
+.action-button.hide {
+  opacity: 0;
+}
+
 .loading-button__loading > svg {
   fill: transparent;
 }
