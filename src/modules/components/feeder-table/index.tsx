@@ -235,9 +235,9 @@ function FeederTable() {
             Note: this board can only track 10 feeders at a time
           </p>
           <p className="add-feeder-note">
-            Note 2: By default, the refresh button only refreshes if the feeder was updated
-            at least an hour ago. Manually select some feeders and refresh them
-            individually if you want fresh data
+            Note 2: By default, the refresh button only refreshes if the feeder
+            was updated at least an hour ago. Manually select some feeders and
+            refresh them individually if you want fresh data
           </p>
         </Stack>
         <div style={{ height: 400, width: "100%" }}>

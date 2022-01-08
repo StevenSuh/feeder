@@ -14,7 +14,9 @@ const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
 const MAX_FEEDERS_LENGTH = 10;
 
-app.use(cors({ origin: 'https://feeder.onrender.com', optionsSuccessStatus: 200 }));
+app.use(
+  cors({ origin: "https://feeder.onrender.com", optionsSuccessStatus: 200 })
+);
 app.use(express.json());
 
 // Have Node serve the files for our built React app
@@ -189,7 +191,7 @@ app.get("/api/feeders", async (req, res, next) => {
     }))
     .filter(
       ({ puuid, lastFetched = 0 }) =>
-        (Date.now() - lastFetched) > (1000 * 60 * 60) ||
+        Date.now() - lastFetched > 1000 * 60 * 60 ||
         feedersToForceFetch.includes(puuid)
     );
 
@@ -317,7 +319,7 @@ app.delete("/api/feeders", async (req, res) => {
 
 // All other GET requests not handled before will return our React app
 app.get("*", (_req, res) => {
-  res.sendFile(path.resolve(__dirname, "../build", "index.html"));
+  res.sendFile(path.resolve("../build", "index.html"));
 });
 
 app.listen(PORT);
