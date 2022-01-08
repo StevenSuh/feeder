@@ -2,7 +2,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import fetch from "node-fetch";
-import path from "path";
 
 import { Feeder } from "./db.js";
 
@@ -18,9 +17,6 @@ app.use(
   cors({ origin: "https://feeder.onrender.com", optionsSuccessStatus: 200 })
 );
 app.use(express.json());
-
-// Have Node serve the files for our built React app
-app.use(express.static(path.resolve("../build")));
 
 const fetchRiotWithDelay = (url, delay = 1000) =>
   new Promise((resolve, reject) =>
@@ -315,11 +311,6 @@ app.post("/api/feeder", async (req, res, next) => {
 app.delete("/api/feeders", async (req, res) => {
   await Feeder.deleteMany({ puuid: { $in: req.body.ids } });
   res.json({});
-});
-
-// All other GET requests not handled before will return our React app
-app.get("*", (_req, res) => {
-  res.sendFile(path.resolve("../build", "index.html"));
 });
 
 app.listen(PORT);
