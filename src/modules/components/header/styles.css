@@ -1,3 +1,14 @@
+.logo-header {
+  font-family: 'VT323' !important;
+}
+
+.logo {
+  border-radius: 6px;
+  height: 36px;
+  width: 36px;
+  margin-right: 12px;
+}
+
 .dark-mode-label-wrapper {
   margin-right: 0 !important;
 }

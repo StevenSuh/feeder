@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 
 import Alert from "@mui/material/Alert";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Switch from "@mui/material/Switch";
 
@@ -11,6 +12,7 @@ import LightMode from "@mui/icons-material/LightMode";
 
 import { selectErrorMsg } from "../../../reducer";
 
+import jerryPng from './jerry.png';
 import "./styles.css";
 
 function Header() {
@@ -52,7 +54,12 @@ function Header() {
   return (
     <Stack direction="column">
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <h1>Feeders</h1>
+        <Link href="https://youtu.be/CpR2kMxy7O8?t=19" target="_blank" rel="noopener" underline="none">
+          <Stack direction="row" alignItems="center">
+            <img className="logo" src={jerryPng} alt="jerry" />
+            <h1 className="logo-header">Feeders</h1>
+          </Stack>
+        </Link>
         <FormControlLabel
           classes={{
             root: "dark-mode-label-wrapper",
