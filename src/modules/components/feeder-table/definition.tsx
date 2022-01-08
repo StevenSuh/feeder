@@ -1,4 +1,9 @@
+import React from "react";
+
+import Stack from "@mui/material/Stack";
 import { GridColDef } from "@mui/x-data-grid";
+
+import RefreshRowBtn from "./refresh-row-btn";
 
 const MINUTE = 1000 * 60;
 const HOUR = MINUTE * 60;
@@ -56,7 +61,7 @@ const columns: GridColDef[] = [
       }).format(Number(value)),
   },
   {
-    flex: 1,
+    flex: 1.5,
     field: "lastFetched",
     headerName: "Last updated",
     type: "number",
@@ -79,6 +84,20 @@ const columns: GridColDef[] = [
       diff = Math.round((dateNow - Number(value)) / MINUTE);
       unit = "minute";
       return formatByUnit(diff, unit);
+    },
+    renderCell: (params) => {
+      const value = params.formattedValue;
+      return (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={1}
+        >
+          <span>{value}</span>
+          <RefreshRowBtn id={params.id as string} />
+        </Stack>
+      );
     },
   },
 ];

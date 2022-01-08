@@ -191,13 +191,12 @@ app.get("/api/feeders", async (req, res) => {
       lastFetched: feeder.lastFetched,
     }))
     .filter(
-      ({ puuid, lastFetched = 0 }) =>
-        Date.now() - lastFetched > 1000 * 60 * 60 * 24 ||
+      ({ puuid }) =>
         feedersToForceFetch.includes(puuid)
     );
 
   const riotProfilesPromise = Promise.all(
-    allFeeders.map((feeder, i) =>
+    feedersToFetch.map((feeder, i) =>
       promiseWithTimeout(() => getRiotProfile(feeder), 1000 + (i + 1) * 1000)
     )
   );

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import classNames from "classnames";
 
 import Alert from "@mui/material/Alert";
@@ -13,18 +14,22 @@ import TextField from "@mui/material/TextField";
 
 import { DataGrid, GridSelectionModel } from "@mui/x-data-grid";
 
-import RefreshIcon from "@mui/icons-material/Refresh";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+
+import {
+  updateIsLoading,
+  updateErrorMsg,
+  replaceFeederRows,
+  selectErrorMsg,
+  selectFeederRows,
+  selectIsLoading,
+} from "../../../reducer";
 
 import columns, { MAX_NUMBER_OF_FEEDERS } from "./definition";
 import "./styles.css";
 
-const fetchFeeders = (selectedIds?: GridSelectionModel) =>
-  fetch(
-    `/api/feeders?${
-      selectedIds && selectedIds.length ? "ids=" + selectedIds.join(",") : ""
-    }`
-  ).then(async (res) => {
+const fetchFeeders = () =>
+  fetch("/api/feeders").then(async (res) => {
     const data = await res.json();
     return { ok: res.ok, data };
   });
@@ -52,8 +57,10 @@ const validateNewFeederName = (
 function FeederTable() {
   const skipInitialRender = useRef(false);
 
-  const [feederRows, setFeederRows] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const feederRows = useSelector(selectFeederRows);
+  const isLoading = useSelector(selectIsLoading);
+  const errorMsg = useSelector(selectErrorMsg);
+  const dispatch = useDispatch();
 
   const [selectedIds, setSelectedIds] = useState<GridSelectionModel>([]);
   const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
@@ -61,41 +68,42 @@ function FeederTable() {
   const [newFeederName, setNewFeederName] = useState("");
   const [isAddNameLoading, setIsAddNameLoading] = useState(false);
 
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const onRefresh = useCallback(async (selectedIds?: GridSelectionModel) => {
-    setErrorMsg("");
-    setIsLoading(true);
-    const result = await fetchFeeders(selectedIds);
-    setIsLoading(false);
+  const onRefresh = useCallback(async () => {
+    dispatch(updateErrorMsg(""));
+    dispatch(updateIsLoading(true));
+    const result = await fetchFeeders();
+    dispatch(updateIsLoading(false));
 
     if (!result.ok) {
-      setErrorMsg(result.data.message);
+      dispatch(updateErrorMsg(result.data.message));
       return;
     }
 
-    setErrorMsg("");
-    setFeederRows(result.data);
-  }, []);
+    dispatch(updateErrorMsg(""));
+    dispatch(replaceFeederRows(result.data));
+  }, [dispatch]);
 
-  const onClickRemoveButton = useCallback((selectedIds: GridSelectionModel) => {
-    setErrorMsg("");
-    if (!selectedIds.length) {
-      setErrorMsg("Select a feeder to remove");
-      return;
-    }
-    setShowRemoveConfirmation(true);
-  }, []);
+  const onClickRemoveButton = useCallback(
+    (selectedIds: GridSelectionModel) => {
+      dispatch(updateErrorMsg(""));
+      if (!selectedIds.length) {
+        dispatch(updateErrorMsg("Select a feeder to remove"));
+        return;
+      }
+      setShowRemoveConfirmation(true);
+    },
+    [dispatch]
+  );
 
   const onRemoveSelectedIds = useCallback(
     async (selectedIds: GridSelectionModel) => {
       if (isLoading) {
-        setErrorMsg("Wait for table to load data first");
+        dispatch(updateErrorMsg("Wait for table to load data first"));
         return;
       }
 
       if (!selectedIds.length) {
-        setErrorMsg("Select a feeder to remove");
+        dispatch(updateErrorMsg("Select a feeder to remove"));
         return;
       }
 
@@ -108,25 +116,25 @@ function FeederTable() {
         .catch(() => false);
 
       if (!data) {
-        setErrorMsg("Failed to remove - try again later");
+        dispatch(updateErrorMsg("Failed to remove - try again later"));
         return;
       }
 
       if (data.message) {
-        setErrorMsg(data.message);
+        dispatch(updateErrorMsg(data.message));
         return;
       }
 
       setSelectedIds([]);
       onRefresh();
     },
-    [isLoading, onRefresh]
+    [dispatch, isLoading, onRefresh]
   );
 
   const onAddFeeder = useCallback(
     async (newFeederName: string) => {
       if (isLoading) {
-        setErrorMsg("Wait for table to load data first");
+        dispatch(updateErrorMsg("Wait for table to load data first"));
         return;
       }
 
@@ -136,7 +144,7 @@ function FeederTable() {
 
       const validationMsg = validateNewFeederName(newFeederName, feederRows);
       if (validationMsg) {
-        setErrorMsg(validationMsg);
+        dispatch(updateErrorMsg(validationMsg));
         return;
       }
 
@@ -151,12 +159,12 @@ function FeederTable() {
         .catch((err) => false);
 
       if (!data) {
-        setErrorMsg("Failed to add - try again later");
+        dispatch(updateErrorMsg("Failed to add - try again later"));
         return;
       }
 
       if (data.message) {
-        setErrorMsg(data.message);
+        dispatch(updateErrorMsg(data.message));
         return;
       }
 
@@ -164,7 +172,7 @@ function FeederTable() {
       setNewFeederName("");
       onRefresh();
     },
-    [isAddNameLoading, isLoading, feederRows, onRefresh]
+    [dispatch, isAddNameLoading, isLoading, feederRows, onRefresh]
   );
 
   const onPressEnter = useCallback(
@@ -197,27 +205,14 @@ function FeederTable() {
           justifyContent="space-between"
         >
           <h3>Last 7 days</h3>
-          <Stack direction="row" alignItems="center">
-            <Button
-              classes={{ root: "action-button" }}
-              className={classNames({ hide: !selectedIds.length })}
-              variant="text"
-              onClick={() => onClickRemoveButton(selectedIds)}
-            >
-              <PersonRemoveIcon />
-            </Button>
-            <LoadingButton
-              classes={{
-                root: "loading-button",
-                loading: "loading-button__loading",
-              }}
-              loading={isLoading}
-              variant="text"
-              onClick={() => onRefresh(selectedIds)}
-            >
-              <RefreshIcon />
-            </LoadingButton>
-          </Stack>
+          <Button
+            classes={{ root: "action-button" }}
+            className={classNames({ hide: !selectedIds.length })}
+            variant="text"
+            onClick={() => onClickRemoveButton(selectedIds)}
+          >
+            <PersonRemoveIcon />
+          </Button>
         </Stack>
         <Stack className="add-feeder-wrapper" direction="column">
           <Stack direction="row" alignItems="normal" spacing={2}>
@@ -241,12 +236,7 @@ function FeederTable() {
             </LoadingButton>
           </Stack>
           <p className="add-feeder-note">
-            Note: this board can only track {MAX_NUMBER_OF_FEEDERS} feeders at a time
-          </p>
-          <p className="add-feeder-note">
-            Note 2: By default, the refresh button only refreshes if the feeder
-            was updated at least an hour ago. Manually select some feeders and
-            refresh them individually if you want fresh data
+            Note: Riot API sucks which is why it takes forever to load
           </p>
         </Stack>
         <div style={{ height: 400, width: "100%" }}>
