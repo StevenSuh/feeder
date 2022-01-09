@@ -14,29 +14,34 @@ const formatByUnit = (diff: number, unit: string) =>
 
 const columns: GridColDef[] = [
   {
+    minWidth: 120,
     flex: 1,
     field: "feederName",
     headerName: "Feeder name",
   },
   {
+    minWidth: 120,
     flex: 1,
     field: "hoursPlayedOneWeek",
     headerName: "Hours played",
     type: "number",
   },
   {
+    minWidth: 120,
     flex: 1,
     field: "gamesPlayedOneWeek",
     headerName: "Games played",
     type: "number",
   },
   {
+    minWidth: 120,
     flex: 1,
     field: "avgImpactScoreOneWeek",
     headerName: "Avg impact score",
     type: "number",
   },
   {
+    minWidth: 120,
     flex: 1,
     field: "deathParticipationPercentageOneWeek",
     headerName: "Death participation",
@@ -49,6 +54,7 @@ const columns: GridColDef[] = [
       }).format(Number(value)),
   },
   {
+    minWidth: 120,
     flex: 1,
     field: "killParticipationPercentageOneWeek",
     headerName: "Kill participation",
@@ -61,6 +67,7 @@ const columns: GridColDef[] = [
       }).format(Number(value)),
   },
   {
+    minWidth: 180,
     flex: 1.5,
     field: "lastFetched",
     headerName: "Last updated",
